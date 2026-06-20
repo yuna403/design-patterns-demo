@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>命令模式 - 家电遥控器</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">命令模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">遥控器将按钮操作封装为 Command 对象，支持执行和撤销。</p>
+
+    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+      <button class="btn btn-primary" onclick="toggleDevice('light')">💡 灯光开关</button>
+      <button class="btn btn-primary" onclick="toggleDevice('tv')">📺 电视开关</button>
+      <button class="btn btn-primary" onclick="toggleDevice('fan')">🌀 风扇开关</button>
+      <button class="btn btn-primary" onclick="toggleDevice('fridge')">🧊 冰箱开关</button>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn btn-danger" onclick="undoLast()" style="width:100%;">↩ 撤销上一步</button>
+    </div>
+    <div style="margin-top:0.5rem;">
+      <button class="btn btn-outline" onclick="resetAll()" style="width:100%;">全部关闭</button>
+    </div>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">设备状态</h3>
+      <div class="device" id="dev-light"><div class="dot"></div><div class="name">💡 灯</div><div class="state">关闭</div></div>
+      <div class="device" id="dev-tv"><div class="dot"></div><div class="name">📺 电视</div><div class="state">关闭</div></div>
+      <div class="device" id="dev-fan"><div class="dot"></div><div class="name">🌀 风扇</div><div class="state">关闭</div></div>
+      <div class="device" id="dev-fridge"><div class="dot"></div><div class="name">🧊 冰箱</div><div class="state">关闭</div></div>
+
+      <h4 style="font-size:0.9rem;margin-top:1.5rem;">命令历史栈 (Undo Stack)</h4>
+      <div class="stack-container" id="commandStack"></div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const devices = { light: false, tv: false, fan: false, fridge: false };
+const commandStack = [];
+const deviceNames = { light:'灯', tv:'电视', fan:'风扇', fridge:'冰箱' };
+
+function toggleDevice(name) {
+  const wasOn = devices[name];
+  devices[name] = !wasOn;
+  const action = wasOn ? 'TurnOff' : 'TurnOn';
+  commandStack.push({ device: name, action, reverse: wasOn });
+  updateDeviceUI(name);
+  log(`remoteControl.pressButton() → ${action}Command(${deviceNames[name]}).execute()`, 'highlight');
+  renderStack();
+}
+
+function undoLast() {
+  if (commandStack.length === 0) {
+    log('undo(): 命令栈为空，无操作', 'warning');
+    return;
+  }
+  const cmd = commandStack.pop();
+  devices[cmd.device] = cmd.reverse;
+  updateDeviceUI(cmd.device);
+  const undoAction = cmd.reverse ? 'TurnOn' : 'TurnOff';
+  log(`remoteControl.undoButton() → ${cmd.action}Command(${deviceNames[cmd.device]}).undo() → ${undoAction}`, 'warning');
+  renderStack();
+}
+
+function updateDeviceUI(name) {
+  const el = document.getElementById('dev-' + name);
+  const on = devices[name];
+  el.classList.toggle('active', on);
+  el.querySelector('.state').textContent = on ? '开启' : '关闭';
+}
+
+function renderStack() {
+  const container = document.getElementById('commandStack');
+  container.innerHTML = commandStack.map((cmd, i) => `
+    <div class="stack-item" style="${i === commandStack.length - 1 ? 'background:#c7d2fe;font-weight:700;' : ''}">
+      ${cmd.action}Command(${deviceNames[cmd.device]})
+    </div>
+  `).join('');
+}
+
+function resetAll() {
+  Object.keys(devices).forEach(k => devices[k] = false);
+  commandStack.length = 0;
+  Object.keys(devices).forEach(updateDeviceUI);
+  renderStack();
+  clearLog();
+  log('所有设备已关闭', 'success');
+}
+
+log('RemoteControl 遥控器就绪', 'success');
+</script>
+</body>
+</html>

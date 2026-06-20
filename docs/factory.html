@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工厂模式 - Pizza Store</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">工厂模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">三种工厂模式的 Pizza 制作演示。</p>
+    <button class="btn btn-outline" onclick="clearLog()" style="width:100%;">清空日志</button>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="simple">简单工厂</button>
+        <button class="tab-btn" data-tab="method">工厂方法</button>
+        <button class="tab-btn" data-tab="abstract">抽象工厂</button>
+      </div>
+
+      <!-- Simple Factory -->
+      <div class="tab-content active" id="simple">
+        <h4>SimplePizzaFactory.createPizza(type)</h4>
+        <div class="btn-group" style="margin-bottom:1rem;">
+          <button class="btn btn-primary" onclick="simpleFactory('cheese')">Cheese</button>
+          <button class="btn btn-primary" onclick="simpleFactory('pepperoni')">Pepperoni</button>
+          <button class="btn btn-primary" onclick="simpleFactory('clam')">Clam</button>
+          <button class="btn btn-primary" onclick="simpleFactory('veggie')">Veggie</button>
+        </div>
+        <div id="simpleResult" class="status-card" style="display:none;"></div>
+      </div>
+
+      <!-- Factory Method -->
+      <div class="tab-content" id="method">
+        <h4>PizzaStore (子类覆写 createPizza)</h4>
+        <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <select id="fmStore" class="btn btn-outline">
+            <option value="NY">NYPizzaStore</option>
+            <option value="Chicago">ChicagoPizzaStore</option>
+          </select>
+          <select id="fmType" class="btn btn-outline">
+            <option value="cheese">Cheese</option>
+            <option value="pepperoni">Pepperoni</option>
+            <option value="clam">Clam</option>
+            <option value="veggie">Veggie</option>
+          </select>
+          <button class="btn btn-success" onclick="factoryMethod()">orderPizza()</button>
+        </div>
+        <div id="fmResult" class="status-card" style="display:none;"></div>
+      </div>
+
+      <!-- Abstract Factory -->
+      <div class="tab-content" id="abstract">
+        <h4>PizzaIngredientFactory (原料工厂)</h4>
+        <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <select id="afStore" class="btn btn-outline">
+            <option value="NY">NYPizzaIngredientFactory</option>
+            <option value="Chicago">ChicagoPizzaIngredientFactory</option>
+          </select>
+          <select id="afType" class="btn btn-outline">
+            <option value="cheese">CheesePizza</option>
+            <option value="pepperoni">PepperoniPizza</option>
+            <option value="clam">ClamPizza</option>
+            <option value="veggie">VeggiePizza</option>
+          </select>
+          <button class="btn btn-success" onclick="abstractFactory()">制作 Pizza</button>
+        </div>
+        <div id="afResult" class="status-card" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+initTabs();
+
+const ingredients = {
+  NY: { dough:'ThinCrustDough', sauce:'MarinaraSauce', cheese:'ReggianoCheese', veggie:'Garlic', clam:'FreshClams', pepperoni:'SlicedPepperoni' },
+  Chicago: { dough:'ThickCrustDough', sauce:'PlumTomatoSauce', cheese:'MozzarellaCheese', veggie:'Spinach', clam:'FrozenClams', pepperoni:'SlicedPepperoni' }
+};
+
+function simpleFactory(type) {
+  clearLog();
+  const result = document.getElementById('simpleResult');
+  result.style.display = 'block';
+  log(`SimplePizzaFactory.createPizza("${type}")`, 'highlight');
+  log(`  → new ${type.charAt(0).toUpperCase()+type.slice(1)}Pizza()`);
+  log(`  → pizza.prepare()`);
+  log(`  → pizza.bake()`);
+  log(`  → pizza.cut()`);
+  log(`  → pizza.box()`, 'success');
+  result.innerHTML = `<h4>${type.charAt(0).toUpperCase()+type.slice(1)} Pizza</h4>
+    <div class="detail">SimplePizzaFactory 创建 → prepare → bake → cut → box</div>
+    <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--success);">✓ 订单完成</div>`;
+}
+
+function factoryMethod() {
+  clearLog();
+  const store = document.getElementById('fmStore').value;
+  const type = document.getElementById('fmType').value;
+  const result = document.getElementById('fmResult');
+  result.style.display = 'block';
+  log(`${store}PizzaStore.orderPizza("${type}")`, 'highlight');
+  log(`  → 调用子类覆写的 createPizza("${type}")`);
+  log(`  → ${store}PizzaStore.createPizza() 返回 ${store}Style${type.charAt(0).toUpperCase()+type.slice(1)}Pizza`);
+  log(`  → pizza.prepare()`);
+  log(`  → pizza.bake()`);
+  log(`  → pizza.cut()`);
+  log(`  → pizza.box()`, 'success');
+  result.innerHTML = `<h4>${store} Style ${type.charAt(0).toUpperCase()+type.slice(1)} Pizza</h4>
+    <div class="detail">工厂方法：${store}PizzaStore 子类决定创建哪种 Pizza</div>
+    <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--success);">✓ 订单完成</div>`;
+}
+
+function abstractFactory() {
+  clearLog();
+  const store = document.getElementById('afStore').value;
+  const type = document.getElementById('afType').value;
+  const result = document.getElementById('afResult');
+  const ing = ingredients[store];
+  result.style.display = 'block';
+  log(`${store}PizzaIngredientFactory 创建原料:`, 'highlight');
+  log(`  → dough: new ${ing.dough}()`);
+  log(`  → sauce: new ${ing.sauce}()`);
+  log(`  → cheese: new ${ing.cheese}()`);
+  if (type === 'clam') log(`  → clam: new ${ing.clam}()`);
+  if (type === 'pepperoni') log(`  → pepperoni: new ${ing.pepperoni}()`);
+  if (type === 'veggie') log(`  → veggie: new ${ing.veggie}()`);
+  log(`  → ${type.charAt(0).toUpperCase()+type.slice(1)}Pizza.prepare() 使用原料`);
+  log(`  → bake → cut → box`, 'success');
+  result.innerHTML = `<h4>${type.charAt(0).toUpperCase()+type.slice(1)} Pizza (${store})</h4>
+    <div class="detail"><strong>原料:</strong> ${ing.dough}, ${ing.sauce}, ${ing.cheese}${type==='clam'?', '+ing.clam:''}${type==='pepperoni'?', '+ing.pepperoni:''}${type==='veggie'?', '+ing.veggie:''}</div>
+    <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--success);">✓ 订单完成</div>`;
+}
+
+log('PizzaStore 系统就绪', 'success');
+</script>
+</body>
+</html>

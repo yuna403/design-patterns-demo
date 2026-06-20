@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>迭代器模式 - 餐厅菜单</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">迭代器 + 组合模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">Waitress 使用统一的 Iterator 接口遍历不同结构的菜单，组合模式支持嵌套子菜单。</p>
+
+    <div class="btn-group" style="flex-direction:column;">
+      <button class="btn btn-primary" onclick="stepIterate()">▶ 下一步迭代</button>
+      <button class="btn btn-success" onclick="autoIterate()">⏩ 自动遍历全部</button>
+      <button class="btn btn-outline" onclick="resetIterator()">↻ 重置迭代器</button>
+    </div>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">菜单结构 (组合模式树)</h3>
+      <ul class="tree" id="menuTree">
+        <li><span class="node-label folder" data-id="all">All Menus</span>
+          <ul>
+            <li><span class="node-label folder" data-id="breakfast">PancakeHouseMenu (早餐)</span>
+              <ul>
+                <li><span class="node-label" data-id="b1">K&B's Pancake Breakfast - $2.99</span></li>
+                <li><span class="node-label" data-id="b2">Regular Pancake Breakfast - $2.99</span></li>
+                <li><span class="node-label" data-id="b3">Blueberry Pancakes - $3.49</span></li>
+                <li><span class="node-label" data-id="b4">Waffles - $3.59</span></li>
+              </ul>
+            </li>
+            <li><span class="node-label folder" data-id="lunch">DinerMenu (午餐)</span>
+              <ul>
+                <li><span class="node-label" data-id="l1">Vegetarian BLT - $2.99</span></li>
+                <li><span class="node-label" data-id="l2">BLT - $2.99</span></li>
+                <li><span class="node-label" data-id="l3">Soup of the day - $3.29</span></li>
+                <li><span class="node-label" data-id="l4">Hotdog - $3.05</span></li>
+              </ul>
+            </li>
+            <li><span class="node-label folder" data-id="dessert">DessertMenu (甜点)</span>
+              <ul>
+                <li><span class="node-label" data-id="d1">Apple Pie - $1.59</span></li>
+                <li><span class="node-label" data-id="d2">Cheesecake - $1.99</span></li>
+                <li><span class="node-label" data-id="d3">Sorbet - $1.49</span></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <h4 style="font-size:0.9rem;margin-top:1.5rem;">迭代器输出</h4>
+      <div id="iterOutput" style="font-size:0.85rem;max-height:200px;overflow-y:auto;"></div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const flatMenu = ['b1','b2','b3','b4','l1','l2','l3','l4','d1','d2','d3'];
+const menuNames = {
+  b1:"K&B's Pancake Breakfast", b2:"Regular Pancake Breakfast", b3:"Blueberry Pancakes", b4:"Waffles",
+  l1:"Vegetarian BLT", l2:"BLT", l3:"Soup of the day", l4:"Hotdog",
+  d1:"Apple Pie", d2:"Cheesecake", d3:"Sorbet"
+};
+let iterIndex = 0;
+let autoRunning = false;
+
+function highlightNode(id) {
+  document.querySelectorAll('.node-label.highlighted').forEach(n => n.classList.remove('highlighted'));
+  const el = document.querySelector(`.node-label[data-id="${id}"]`);
+  if (el) el.classList.add('highlighted');
+}
+
+function stepIterate() {
+  if (iterIndex >= flatMenu.length) {
+    log('CompositeIterator: 所有菜单项已遍历完毕', 'warning');
+    return;
+  }
+  const id = flatMenu[iterIndex];
+  highlightNode(id);
+  const output = document.getElementById('iterOutput');
+  output.innerHTML += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border);animation:slideIn 0.3s ease;">
+    <strong>[${iterIndex+1}]</strong> ${menuNames[id]}
+  </div>`;
+  output.scrollTop = output.scrollHeight;
+  log(`iterator.next() → MenuItem("${menuNames[id]}")`, 'highlight');
+  log(`  hasNext() = ${iterIndex + 1 < flatMenu.length}`);
+  iterIndex++;
+}
+
+async function autoIterate() {
+  if (autoRunning) return;
+  autoRunning = true;
+  while (iterIndex < flatMenu.length) {
+    stepIterate();
+    await new Promise(r => setTimeout(r, 400));
+  }
+  autoRunning = false;
+  log('遍历完成 ✓', 'success');
+}
+
+function resetIterator() {
+  iterIndex = 0;
+  autoRunning = false;
+  document.querySelectorAll('.node-label.highlighted').forEach(n => n.classList.remove('highlighted'));
+  document.getElementById('iterOutput').innerHTML = '';
+  clearLog();
+  log('new CompositeIterator(allMenus.iterator()) — 迭代器已重置', 'success');
+}
+
+log('Waitress 准备遍历所有菜单', 'success');
+log('new CompositeIterator(allMenus.createIterator())', 'highlight');
+</script>
+</body>
+</html>

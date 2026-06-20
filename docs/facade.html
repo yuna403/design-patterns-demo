@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外观模式 - 家庭影院</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">外观模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">HomeTheaterFacade 封装多个子系统，提供简化的高层接口。</p>
+
+    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+      <button class="btn btn-success" onclick="watchMovie()">🎬 看电影</button>
+      <button class="btn btn-primary" onclick="listenToMusic()">🎵 听音乐</button>
+      <button class="btn btn-danger" onclick="endAll()">⏹ 关闭设备</button>
+    </div>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">子系统组件状态</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;" id="components">
+        <div class="status-card" id="comp-popcorn"><h4>🍿 PopcornPopper</h4><div class="detail" id="state-popcorn">关闭</div></div>
+        <div class="status-card" id="comp-lights"><h4>💡 TheaterLights</h4><div class="detail" id="state-lights">全亮 (100%)</div></div>
+        <div class="status-card" id="comp-screen"><h4>🖥️ Screen</h4><div class="detail" id="state-screen">收起</div></div>
+        <div class="status-card" id="comp-projector"><h4>📽️ Projector</h4><div class="detail" id="state-projector">关闭</div></div>
+        <div class="status-card" id="comp-amplifier"><h4>🔊 Amplifier</h4><div class="detail" id="state-amplifier">关闭</div></div>
+        <div class="status-card" id="comp-player"><h4>📀 StreamingPlayer</h4><div class="detail" id="state-player">关闭</div></div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+async function animate(id, text) {
+  await new Promise(r => setTimeout(r, 300));
+  document.getElementById('state-' + id).textContent = text;
+  document.getElementById('comp-' + id).style.background = '#dcfce7';
+  setTimeout(() => document.getElementById('comp-' + id).style.background = '', 500);
+}
+
+function resetStates() {
+  ['popcorn','lights','screen','projector','amplifier','player'].forEach(id => {
+    document.getElementById('comp-' + id).style.background = '';
+  });
+}
+
+async function watchMovie() {
+  clearLog();
+  resetStates();
+  log('facade.watchMovie("Inception")', 'highlight');
+
+  log('  → popcornPopper.on()');
+  await animate('popcorn', '运行中');
+  log('  → popcornPopper.pop()');
+  await animate('popcorn', '爆米花制作完成');
+
+  log('  → theaterLights.dim(10)');
+  await animate('lights', '调暗 (10%)');
+
+  log('  → screen.down()');
+  await animate('screen', '降下');
+
+  log('  → projector.on()');
+  await animate('projector', '开启');
+  log('  → projector.wideScreenMode()');
+  await animate('projector', '宽屏模式');
+
+  log('  → amplifier.on()');
+  await animate('amplifier', '开启');
+  log('  → amplifier.setStreamingPlayer()');
+  log('  → amplifier.setSurroundSound()');
+  log('  → amplifier.setVolume(5)');
+  await animate('amplifier', '环绕声 音量:5');
+
+  log('  → streamingPlayer.on()');
+  await animate('player', '开启');
+  log('  → streamingPlayer.play("Inception")');
+  await animate('player', '播放: Inception');
+
+  log('电影开始播放 ✓', 'success');
+}
+
+async function listenToMusic() {
+  clearLog();
+  resetStates();
+  log('facade.listenToMusic("Jazz Playlist")', 'highlight');
+
+  log('  → theaterLights.dim(50)');
+  await animate('lights', '调暗 (50%)');
+
+  log('  → amplifier.on()');
+  await animate('amplifier', '开启');
+  log('  → amplifier.setVolume(8)');
+  await animate('amplifier', '立体声 音量:8');
+
+  log('  → streamingPlayer.on()');
+  await animate('player', '开启');
+  log('  → streamingPlayer.play("Jazz Playlist")');
+  await animate('player', '播放: Jazz Playlist');
+
+  log('音乐播放中 ✓', 'success');
+}
+
+async function endAll() {
+  clearLog();
+  resetStates();
+  log('facade.end()', 'highlight');
+
+  log('  → popcornPopper.off()');
+  await animate('popcorn', '关闭');
+  log('  → theaterLights.on()');
+  await animate('lights', '全亮 (100%)');
+  log('  → screen.up()');
+  await animate('screen', '收起');
+  log('  → projector.off()');
+  await animate('projector', '关闭');
+  log('  → amplifier.off()');
+  await animate('amplifier', '关闭');
+  log('  → streamingPlayer.off()');
+  await animate('player', '关闭');
+
+  log('所有设备已关闭 ✓', 'success');
+}
+
+log('HomeTheaterFacade 就绪', 'success');
+</script>
+</body>
+</html>

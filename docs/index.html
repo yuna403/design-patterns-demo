@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设计模式可视化演示</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links">
+    <a href="https://github.com/yuna403/design-patterns-demo" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<div style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem;">
+  <div style="text-align:center;margin-bottom:2rem;">
+    <h1 style="font-size:2rem;margin-bottom:0.5rem;">设计模式交互式演示</h1>
+    <p style="color:var(--text-muted);font-size:1rem;">包含 11 种经典设计模式的可视化交互演示，帮助直观理解每个模式的工作原理。</p>
+  </div>
+
+  <div class="section-title">创建型模式 (Creational)</div>
+  <div class="card-grid">
+    <a href="factory.html" class="pattern-card">
+      <div class="card-icon" style="background:#dbeafe;">🏭</div>
+      <h3>工厂模式</h3>
+      <p>简单工厂、工厂方法、抽象工厂三种实现，以 Pizza 店为例展示对象创建过程。</p>
+      <span class="badge badge-creational">创建型</span>
+    </a>
+    <a href="singleton.html" class="pattern-card">
+      <div class="card-icon" style="background:#dbeafe;">🔒</div>
+      <h3>单例模式</h3>
+      <p>对比懒汉式、饿汉式、双重检查锁、IoDH 四种实现，验证实例唯一性。</p>
+      <span class="badge badge-creational">创建型</span>
+    </a>
+  </div>
+
+  <div class="section-title">结构型模式 (Structural)</div>
+  <div class="card-grid">
+    <a href="decorator.html" class="pattern-card">
+      <div class="card-icon" style="background:#dcfce7;">☕</div>
+      <h3>装饰器模式</h3>
+      <p>以星巴克咖啡定制为例，动态叠加配料装饰，实时计算价格。</p>
+      <span class="badge badge-structural">结构型</span>
+    </a>
+    <a href="adapter.html" class="pattern-card">
+      <div class="card-icon" style="background:#dcfce7;">🔌</div>
+      <h3>适配器模式</h3>
+      <p>演示 Enumeration 接口适配为 Iterator 接口的方法映射过程。</p>
+      <span class="badge badge-structural">结构型</span>
+    </a>
+    <a href="facade.html" class="pattern-card">
+      <div class="card-icon" style="background:#dcfce7;">🎬</div>
+      <h3>外观模式</h3>
+      <p>家庭影院一键操作，简化多个子系统的复杂调用。</p>
+      <span class="badge badge-structural">结构型</span>
+    </a>
+    <a href="composite.html" class="pattern-card">
+      <div class="card-icon" style="background:#dcfce7;">📄</div>
+      <h3>组合模式</h3>
+      <p>文档编辑器，组合文本元素与装饰器，树形结构预览。</p>
+      <span class="badge badge-structural">结构型</span>
+    </a>
+  </div>
+
+  <div class="section-title">行为型模式 (Behavioral)</div>
+  <div class="card-grid">
+    <a href="observer.html" class="pattern-card">
+      <div class="card-icon" style="background:#fef3c7;">🌤️</div>
+      <h3>观察者模式</h3>
+      <p>气象站场景，调节温度/湿度/气压，多个显示器实时同步更新。</p>
+      <span class="badge badge-behavioral">行为型</span>
+    </a>
+    <a href="chain.html" class="pattern-card">
+      <div class="card-icon" style="background:#fef3c7;">🔗</div>
+      <h3>责任链模式</h3>
+      <p>差旅费报销审批，逐级传递请求并展示审批链路动画。</p>
+      <span class="badge badge-behavioral">行为型</span>
+    </a>
+    <a href="command.html" class="pattern-card">
+      <div class="card-icon" style="background:#fef3c7;">🎮</div>
+      <h3>命令模式</h3>
+      <p>家电遥控器，开关设备并支持撤销操作，可视化命令栈。</p>
+      <span class="badge badge-behavioral">行为型</span>
+    </a>
+    <a href="iterator.html" class="pattern-card">
+      <div class="card-icon" style="background:#fef3c7;">🍽️</div>
+      <h3>迭代器模式</h3>
+      <p>餐厅菜单遍历，逐步展示迭代器工作原理和组合结构。</p>
+      <span class="badge badge-behavioral">行为型</span>
+    </a>
+    <a href="state.html" class="pattern-card">
+      <div class="card-icon" style="background:#fef3c7;">🚦</div>
+      <h3>状态模式</h3>
+      <p>电梯状态机 + 交通灯自动循环，展示状态转换与行为变化。</p>
+      <span class="badge badge-behavioral">行为型</span>
+    </a>
+  </div>
+</div>
+</body>
+</html>

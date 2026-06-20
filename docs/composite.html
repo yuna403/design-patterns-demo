@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>组合模式 - 文档编辑器</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">组合模式 (文档编辑器)</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">DocumentComponent 组合 TextElement 和 CompositeElement，装饰器动态添加格式。</p>
+
+    <div class="control-group">
+      <label>添加元素</label>
+      <input type="text" id="textContent" placeholder="输入文本内容..." value="Hello World">
+    </div>
+    <div class="control-group">
+      <label>元素类型</label>
+      <select id="elemType">
+        <option value="text">TextElement (段落)</option>
+        <option value="heading">HeadingElement (标题)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>装饰器</label>
+      <div style="display:flex;flex-direction:column;gap:0.3rem;">
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+          <input type="checkbox" id="decBold"> BoldDecorator (加粗)
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+          <input type="checkbox" id="decItalic"> ItalicDecorator (斜体)
+        </label>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addElement()" style="width:100%;">+ 添加到文档</button>
+    <button class="btn btn-outline" onclick="clearDoc()" style="width:100%;margin-top:0.5rem;">清空文档</button>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div>
+          <h3 style="margin-top:0;">文档结构树</h3>
+          <ul class="tree" id="docTree">
+            <li><span class="node-label folder">Document (CompositeElement)</span>
+              <ul id="docTreeChildren"></ul>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="margin-top:0;">渲染预览</h3>
+          <div id="docPreview" style="border:1px solid var(--border);border-radius:8px;padding:1rem;min-height:200px;background:white;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const doc = [];
+
+function addElement() {
+  const text = document.getElementById('textContent').value.trim();
+  if (!text) { log('请输入文本内容', 'warning'); return; }
+  const type = document.getElementById('elemType').value;
+  const bold = document.getElementById('decBold').checked;
+  const italic = document.getElementById('decItalic').checked;
+
+  let desc = type === 'heading' ? 'HeadingElement' : 'TextElement';
+  let decorators = [];
+  if (bold) { desc = 'BoldDecorator(' + desc + ')'; decorators.push('bold'); }
+  if (italic) { desc = 'ItalicDecorator(' + desc + ')'; decorators.push('italic'); }
+
+  doc.push({ text, type, decorators, desc });
+  log(`document.add(${desc}, "${text}")`, 'highlight');
+  render();
+}
+
+function removeElement(idx) {
+  const removed = doc.splice(idx, 1)[0];
+  log(`document.remove(${removed.desc})`, 'warning');
+  render();
+}
+
+function render() {
+  // Tree
+  const treeChildren = document.getElementById('docTreeChildren');
+  treeChildren.innerHTML = doc.map((item, i) => {
+    const decStr = item.decorators.length ? ` [${item.decorators.join('+')}]` : '';
+    return `<li><span class="node-label">${item.desc}</span>
+      <small style="color:var(--danger);cursor:pointer;margin-left:0.5rem;" onclick="removeElement(${i})">✕</small>
+    </li>`;
+  }).join('');
+
+  // Preview
+  const preview = document.getElementById('docPreview');
+  preview.innerHTML = doc.map(item => {
+    let tag = item.type === 'heading' ? 'h2' : 'p';
+    let style = 'margin:0.3rem 0;';
+    if (item.decorators.includes('bold')) style += 'font-weight:700;';
+    if (item.decorators.includes('italic')) style += 'font-style:italic;';
+    return `<${tag} style="${style}">${item.text}</${tag}>`;
+  }).join('');
+
+  if (doc.length === 0) {
+    preview.innerHTML = '<p style="color:var(--text-muted);text-align:center;">文档为空，请添加元素</p>';
+  }
+}
+
+function clearDoc() {
+  doc.length = 0;
+  clearLog();
+  log('文档已清空', 'success');
+  render();
+}
+
+log('DocumentEditor 就绪 — 组合模式 + 装饰器模式', 'success');
+render();
+</script>
+</body>
+</html>

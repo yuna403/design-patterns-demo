@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>适配器模式 - Enumeration 适配</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">适配器模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">将旧接口 Enumeration 适配为新接口 Iterator，无需修改客户端代码。</p>
+    <div class="control-group">
+      <label>数据源</label>
+      <select id="dataSource" onchange="resetAdapter()">
+        <option value="fruits">["Apple","Banana","Cherry","Date"]</option>
+        <option value="numbers">[1, 2, 3, 4, 5]</option>
+        <option value="colors">["Red","Green","Blue"]</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="stepNext()" style="width:100%;margin-top:0.5rem;">next() 下一步</button>
+    <button class="btn btn-outline" onclick="resetAdapter()" style="width:100%;margin-top:0.5rem;">重置迭代器</button>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">接口映射对照</h3>
+      <table style="width:100%;font-size:0.85rem;border-collapse:collapse;margin-bottom:1.5rem;">
+        <tr style="background:#f1f5f9;">
+          <th style="padding:0.6rem;text-align:left;border-bottom:2px solid var(--border);">旧接口 (Enumeration)</th>
+          <th style="padding:0.6rem;text-align:center;border-bottom:2px solid var(--border);">适配器映射</th>
+          <th style="padding:0.6rem;text-align:left;border-bottom:2px solid var(--border);">新接口 (Iterator)</th>
+        </tr>
+        <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border);">hasMoreElements()</td><td style="text-align:center;">→</td><td style="padding:0.5rem;border-bottom:1px solid var(--border);">hasNext()</td></tr>
+        <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border);">nextElement()</td><td style="text-align:center;">→</td><td style="padding:0.5rem;border-bottom:1px solid var(--border);">next()</td></tr>
+        <tr><td style="padding:0.5rem;color:var(--text-muted);">不支持</td><td style="text-align:center;">→</td><td style="padding:0.5rem;">remove() (抛出 UnsupportedOperationException)</td></tr>
+      </table>
+
+      <h4 style="font-size:0.9rem;">迭代过程演示</h4>
+      <div id="iterResult" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;"></div>
+      <div id="iterState" class="status-card">
+        <div class="detail">hasNext(): <strong id="hasNextVal">true</strong></div>
+        <div class="detail">当前索引: <strong id="currentIndex">0</strong> / <strong id="totalItems">4</strong></div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const data = {
+  fruits: ["Apple", "Banana", "Cherry", "Date"],
+  numbers: [1, 2, 3, 4, 5],
+  colors: ["Red", "Green", "Blue"]
+};
+let currentData = [];
+let index = 0;
+let visited = [];
+
+function resetAdapter() {
+  const key = document.getElementById('dataSource').value;
+  currentData = data[key];
+  index = 0;
+  visited = [];
+  document.getElementById('totalItems').textContent = currentData.length;
+  document.getElementById('currentIndex').textContent = '0';
+  document.getElementById('hasNextVal').textContent = 'true';
+  document.getElementById('iterResult').innerHTML = '';
+  clearLog();
+  log(`new EnumerationIterator(new Vector(${JSON.stringify(currentData)}).elements())`, 'success');
+  log(`适配器创建完成，数据: [${currentData.join(', ')}]`);
+}
+
+function stepNext() {
+  if (index >= currentData.length) {
+    log('hasNext() = false → 迭代完成', 'warning');
+    return;
+  }
+  const item = currentData[index];
+  visited.push(item);
+  index++;
+
+  log(`adapter.hasNext() → enumeration.hasMoreElements() = true`, 'highlight');
+  log(`adapter.next() → enumeration.nextElement() = ${JSON.stringify(item)}`);
+
+  document.getElementById('currentIndex').textContent = index;
+  document.getElementById('hasNextVal').textContent = index < currentData.length ? 'true' : 'false';
+
+  const container = document.getElementById('iterResult');
+  container.innerHTML = visited.map((v, i) => `
+    <div style="padding:0.4rem 0.8rem;background:${i===visited.length-1?'#c7d2fe':'#e0e7ff'};border-radius:6px;font-size:0.85rem;font-weight:${i===visited.length-1?'700':'500'};">
+      [${i}] ${JSON.stringify(v)}
+    </div>
+  `).join('');
+
+  if (index >= currentData.length) {
+    log(`下次调用 hasNext() 将返回 false`, 'warning');
+  }
+}
+
+resetAdapter();
+</script>
+</body>
+</html>

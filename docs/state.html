@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>状态模式 - 电梯与交通灯</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">状态模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">对象的行为随内部状态改变而改变，每个状态封装独立的行为逻辑。</p>
+
+    <h4 style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">电梯控制</h4>
+    <div class="btn-group" style="flex-direction:column;margin-bottom:1rem;">
+      <button class="btn btn-primary" onclick="liftOpen()">开门</button>
+      <button class="btn btn-primary" onclick="liftClose()">关门</button>
+      <button class="btn btn-success" onclick="liftUp()">上行</button>
+      <button class="btn btn-warning" onclick="liftDown()">下行</button>
+      <button class="btn btn-outline" onclick="liftStop()">停止</button>
+    </div>
+
+    <h4 style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">交通灯</h4>
+    <div class="btn-group">
+      <button class="btn btn-success" onclick="startTraffic()" id="trafficBtn">▶ 启动</button>
+      <button class="btn btn-danger" onclick="stopTraffic()">⏹ 停止</button>
+    </div>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+        <!-- Elevator -->
+        <div>
+          <h3 style="margin-top:0;">电梯状态机</h3>
+          <div id="liftStates" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;">
+            <span class="badge" id="ls-stopping" style="padding:0.3rem 0.7rem;border-radius:6px;font-size:0.8rem;background:#dbeafe;">停止</span>
+            <span class="badge" id="ls-openning" style="padding:0.3rem 0.7rem;border-radius:6px;font-size:0.8rem;background:#f1f5f9;">开门</span>
+            <span class="badge" id="ls-closing" style="padding:0.3rem 0.7rem;border-radius:6px;font-size:0.8rem;background:#f1f5f9;">关门</span>
+            <span class="badge" id="ls-runningUp" style="padding:0.3rem 0.7rem;border-radius:6px;font-size:0.8rem;background:#f1f5f9;">上行</span>
+            <span class="badge" id="ls-runningDown" style="padding:0.3rem 0.7rem;border-radius:6px;font-size:0.8rem;background:#f1f5f9;">下行</span>
+            <span class="badge" id="ls-running" style="padding:0.3rem 0.7rem;border-radius:6px;font-size:0.8rem;background:#f1f5f9;">运行中</span>
+          </div>
+          <div class="status-card" id="liftDisplay">
+            <h4>当前状态</h4>
+            <div class="value" id="liftStateName">StoppingState</div>
+            <div class="detail" id="liftAction">电梯已停止</div>
+          </div>
+        </div>
+
+        <!-- Traffic Light -->
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <h3 style="margin-top:0;">交通灯</h3>
+          <div class="traffic-light">
+            <div class="light red" id="light-red"></div>
+            <div class="light yellow" id="light-yellow"></div>
+            <div class="light green" id="light-green"></div>
+          </div>
+          <div style="margin-top:1rem;text-align:center;">
+            <div class="value" id="trafficState">停止</div>
+            <div class="detail" id="trafficCountdown">倒计时: --</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+// --- Elevator State Machine ---
+let liftState = 'stopping';
+const validTransitions = {
+  stopping: { open:'openning', up:'runningUp', down:'runningDown' },
+  openning: { close:'closing' },
+  closing: { open:'openning', up:'runningUp', down:'runningDown', stop:'stopping' },
+  runningUp: { stop:'stopping' },
+  runningDown: { stop:'stopping' },
+  running: { stop:'stopping' }
+};
+
+function setLiftState(newState) {
+  document.querySelectorAll('[id^="ls-"]').forEach(el => el.style.background = '#f1f5f9');
+  document.getElementById('ls-' + newState).style.background = '#dbeafe';
+  liftState = newState;
+  document.getElementById('liftStateName').textContent = newState.charAt(0).toUpperCase() + newState.slice(1) + 'State';
+}
+
+function liftOpen() {
+  const next = validTransitions[liftState]?.open;
+  if (!next) { log(`当前状态 ${liftState} 不允许开门操作`, 'warning'); return; }
+  setLiftState(next);
+  document.getElementById('liftAction').textContent = '电梯门打开中...';
+  log(`context.setLiftState(OpenningState)`, 'highlight');
+  log(`  OpenningState.open() → 门已打开`);
+}
+function liftClose() {
+  const next = validTransitions[liftState]?.close;
+  if (!next) { log(`当前状态 ${liftState} 不允许关门操作`, 'warning'); return; }
+  setLiftState(next);
+  document.getElementById('liftAction').textContent = '电梯门关闭中...';
+  log(`context.setLiftState(ClosingState)`, 'highlight');
+}
+function liftUp() {
+  const next = validTransitions[liftState]?.up;
+  if (!next) { log(`当前状态 ${liftState} 不允许上行`, 'warning'); return; }
+  setLiftState(next);
+  document.getElementById('liftAction').textContent = '电梯上行中...';
+  log(`context.setLiftState(RunningUpState)`, 'highlight');
+}
+function liftDown() {
+  const next = validTransitions[liftState]?.down;
+  if (!next) { log(`当前状态 ${liftState} 不允许下行`, 'warning'); return; }
+  setLiftState(next);
+  document.getElementById('liftAction').textContent = '电梯下行中...';
+  log(`context.setLiftState(RunningDownState)`, 'highlight');
+}
+function liftStop() {
+  const next = validTransitions[liftState]?.stop;
+  if (!next) { log(`当前状态 ${liftState} 不需要停止`, 'warning'); return; }
+  setLiftState(next);
+  document.getElementById('liftAction').textContent = '电梯已停止';
+  log(`context.setLiftState(StoppingState)`, 'highlight');
+}
+
+// --- Traffic Light ---
+let trafficTimer = null;
+let countdown = 0;
+const lightCycle = [
+  { color:'green', name:'GreenLightState', duration:10, msg:'绿灯 — 通行' },
+  { color:'yellow', name:'YellowLightState', duration:3, msg:'黄灯 — 注意' },
+  { color:'red', name:'RedLightState', duration:8, msg:'红灯 — 停止' }
+];
+let lightIdx = 0;
+
+function setLight(phase) {
+  ['red','yellow','green'].forEach(c => document.getElementById('light-'+c).classList.remove('active'));
+  document.getElementById('light-'+phase.color).classList.add('active');
+  document.getElementById('trafficState').textContent = phase.msg;
+  log(`trafficLight.setState(${phase.name}) → ${phase.msg}`, 'highlight');
+}
+
+function startTraffic() {
+  if (trafficTimer) return;
+  lightIdx = 0;
+  setLight(lightCycle[0]);
+  countdown = lightCycle[0].duration;
+  document.getElementById('trafficCountdown').textContent = '倒计时: ' + countdown + 's';
+  trafficTimer = setInterval(() => {
+    countdown--;
+    document.getElementById('trafficCountdown').textContent = '倒计时: ' + countdown + 's';
+    if (countdown <= 0) {
+      lightIdx = (lightIdx + 1) % lightCycle.length;
+      setLight(lightCycle[lightIdx]);
+      countdown = lightCycle[lightIdx].duration;
+    }
+  }, 1000);
+  log('交通灯循环启动', 'success');
+}
+
+function stopTraffic() {
+  if (trafficTimer) { clearInterval(trafficTimer); trafficTimer = null; }
+  ['red','yellow','green'].forEach(c => document.getElementById('light-'+c).classList.remove('active'));
+  document.getElementById('trafficState').textContent = '停止';
+  document.getElementById('trafficCountdown').textContent = '倒计时: --';
+  log('交通灯已停止', 'warning');
+}
+
+log('状态模式演示就绪', 'success');
+</script>
+</body>
+</html>

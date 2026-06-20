@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>装饰器模式 - 星巴克咖啡</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">装饰器模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">基础 Beverage + CondimentDecorator 层层叠加，动态扩展功能并计算价格。</p>
+
+    <div class="control-group">
+      <label>选择基础咖啡</label>
+      <select id="baseCoffee" onchange="updateOrder()">
+        <option value="espresso|1.99">Espresso - $1.99</option>
+        <option value="houseblend|0.89">House Blend - $0.89</option>
+        <option value="darkroast|1.05">Dark Roast - $1.05</option>
+        <option value="decaf|1.25">Decaf - $1.25</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>添加配料 (CondimentDecorator)</label>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.3rem;">
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
+          <input type="checkbox" value="mocha|0.20" onchange="updateOrder()"> Mocha (+$0.20)
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
+          <input type="checkbox" value="whip|0.10" onchange="updateOrder()"> Whip (+$0.10)
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
+          <input type="checkbox" value="soy|0.15" onchange="updateOrder()"> Soy (+$0.15)
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
+          <input type="checkbox" value="milk|0.11" onchange="updateOrder()"> Milk (+$0.11)
+        </label>
+      </div>
+    </div>
+    <button class="btn btn-outline" onclick="resetOrder()" style="width:100%;">重置</button>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">订单详情</h3>
+      <div id="description" style="font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;">Espresso</div>
+      <div id="priceBreakdown" style="margin-bottom:1.5rem;"></div>
+
+      <h4 style="font-size:0.9rem;">装饰链可视化</h4>
+      <div id="chain" style="display:flex;align-items:center;flex-wrap:wrap;gap:0.5rem;"></div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+function updateOrder() {
+  const base = document.getElementById('baseCoffee').value.split('|');
+  const baseName = base[0], basePrice = parseFloat(base[1]);
+
+  let desc = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+  let total = basePrice;
+  let html = `<div style="font-size:0.85rem;color:var(--text-muted);">基础: ${desc} = $${fmt(basePrice)}</div>`;
+
+  const decorators = [];
+  document.querySelectorAll('.control-group input[type="checkbox"]:checked').forEach(cb => {
+    const [name, price] = cb.value.split('|');
+    const capName = name.charAt(0).toUpperCase() + name.slice(1);
+    decorators.push(capName);
+    desc += ', ' + capName;
+    total += parseFloat(price);
+    html += `<div style="font-size:0.85rem;color:var(--success);">+ ${capName} = $${parseFloat(price).toFixed(2)}</div>`;
+  });
+
+  document.getElementById('description').textContent = desc;
+  html += `<div style="font-size:1rem;font-weight:700;color:var(--primary);margin-top:0.5rem;border-top:1px solid var(--border);padding-top:0.5rem;">总计: $${fmt(total)}</div>`;
+  document.getElementById('priceBreakdown').innerHTML = html;
+
+  // Chain visualization
+  let chainHtml = `<div style="padding:0.5rem 1rem;background:#dbeafe;border-radius:8px;font-weight:600;font-size:0.85rem;">${baseName.charAt(0).toUpperCase()+baseName.slice(1)}<br><small style="font-weight:normal;color:var(--text-muted);">$${fmt(basePrice)}</small></div>`;
+  decorators.forEach(d => {
+    chainHtml += `<span style="color:var(--text-muted);">→</span>`;
+    chainHtml += `<div style="padding:0.5rem 1rem;background:#dcfce7;border-radius:8px;font-weight:600;font-size:0.85rem;">${d}<br><small style="font-weight:normal;color:var(--text-muted);">Decorator</small></div>`;
+  });
+  chainHtml += `<span style="color:var(--text-muted);">→</span>`;
+  chainHtml += `<div style="padding:0.5rem 1rem;background:#fef3c7;border-radius:8px;font-weight:700;font-size:0.85rem;">$${fmt(total)}<br><small style="font-weight:normal;color:var(--text-muted);">cost()</small></div>`;
+  document.getElementById('chain').innerHTML = chainHtml;
+
+  log(`beverage.getDescription() = "${desc}", cost() = $${fmt(total)}`, 'highlight');
+}
+
+function resetOrder() {
+  document.getElementById('baseCoffee').selectedIndex = 0;
+  document.querySelectorAll('.control-group input[type="checkbox"]').forEach(cb => cb.checked = false);
+  clearLog();
+  log('订单已重置', 'success');
+  updateOrder();
+}
+
+log('StarbucksTest 启动', 'success');
+updateOrder();
+</script>
+</body>
+</html>

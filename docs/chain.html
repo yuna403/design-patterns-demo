@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>责任链模式 - 差旅费报销</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">责任链模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">差旅费报销：根据职级自动选择计算标准，逐级审批。</p>
+
+    <div class="control-group">
+      <label>职级</label>
+      <select id="post" onchange="updateForm()">
+        <option value="普通员工">普通员工 (Staff)</option>
+        <option value="主管">主管 (Leader)</option>
+        <option value="高层">高层 (PM)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>出差城市</label>
+      <select id="city">
+        <option value="一线城市">一线城市</option>
+        <option value="二线城市">二线城市</option>
+        <option value="三线城市">三线城市</option>
+        <option value="四线城市">四线城市</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>出差天数</label>
+      <input type="number" id="days" value="3" min="1" max="30">
+    </div>
+    <div class="control-group">
+      <label>交通费 (单次)</label>
+      <input type="number" id="transport" value="500" min="0" step="50">
+    </div>
+    <div class="control-group">
+      <label>住宿费 (每晚)</label>
+      <input type="number" id="hotel" value="300" min="0" step="50">
+    </div>
+    <button class="btn btn-success" onclick="submitExpense()" style="width:100%;margin-top:0.5rem;">提交报销</button>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">审批链路</h3>
+      <div id="chainSteps">
+        <div class="chain-step" id="step-staff">
+          <div class="step-icon">👤</div>
+          <div class="step-info"><h4>StaffTravelExpense</h4><p>普通员工标准</p></div>
+        </div>
+        <div class="chain-step" id="step-leader">
+          <div class="step-icon">👔</div>
+          <div class="step-info"><h4>LeaderTravelExpense</h4><p>主管标准</p></div>
+        </div>
+        <div class="chain-step" id="step-pm">
+          <div class="step-icon">🏢</div>
+          <div class="step-info"><h4>PMTravelExpense</h4><p>高层标准</p></div>
+        </div>
+      </div>
+      <div id="resultArea" style="margin-top:1.5rem;display:none;">
+        <h4 style="font-size:0.95rem;">计算结果</h4>
+        <div id="resultDetail"></div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const standards = {
+  '普通员工': { '一线城市':270, '二线城市':230, '三线城市':200, '四线城市':150, returnPct:0.5, allowancePct:0.7 },
+  '主管': { '一线城市':350, '二线城市':300, '三线城市':250, '四线城市':150, returnPct:0.4, allowancePct:0.5 },
+  '高层': { '一线城市':700, '二线城市':600, '三线城市':500, '四线城市':400, returnPct:0.2, allowancePct:0.3 }
+};
+const dailyAllowance = { '一线城市':90, '二线城市':70, '三线城市':60, '四线城市':60 };
+
+function updateForm() {
+  document.querySelectorAll('.chain-step').forEach(s => s.className = 'chain-step');
+  const post = document.getElementById('post').value;
+  const stepMap = { '普通员工':'step-staff', '主管':'step-leader', '高层':'step-pm' };
+  document.getElementById(stepMap[post]).classList.add('processing');
+}
+
+async function submitExpense() {
+  clearLog();
+  const post = document.getElementById('post').value;
+  const city = document.getElementById('city').value;
+  const days = parseInt(document.getElementById('days').value);
+  const transport = parseFloat(document.getElementById('transport').value);
+  const hotel = parseFloat(document.getElementById('hotel').value);
+  const std = standards[post];
+
+  document.querySelectorAll('.chain-step').forEach(s => s.className = 'chain-step');
+  const resultArea = document.getElementById('resultArea');
+  resultArea.style.display = 'none';
+
+  log(`TravelExpense.getInstance("${post}")`, 'highlight');
+  log(`  → 创建 ${post}TravelExpense 实例`);
+
+  const chain = ['step-staff', 'step-leader', 'step-pm'];
+  const postMap = { '普通员工':'step-staff', '主管':'step-leader', '高层':'step-pm' };
+  const postOrder = ['step-staff', 'step-leader', 'step-pm'];
+  const targetIdx = postOrder.indexOf(postMap[post]);
+
+  for (let i = 0; i <= targetIdx; i++) {
+    document.getElementById(chain[i]).classList.add('processing');
+    log(`  → 传递到 ${chain[i].replace('step-','')}...`, 'highlight');
+    await new Promise(r => setTimeout(r, 600));
+    document.getElementById(chain[i]).classList.remove('processing');
+    document.getElementById(chain[i]).classList.add(i === targetIdx ? 'approved' : '');
+  }
+
+  log(`  → ${post} 审批通过，开始计算费用`, 'success');
+
+  const hotelStd = std[city];
+  const dailyAllow = dailyAllowance[city];
+  const transportCost = transport;
+  const dailyTotal = dailyAllow * days;
+  const hotelCost = hotel * days;
+  const diffPerDay = hotel - hotelStd;
+  let hotelDiff = 0;
+  if (diffPerDay > 0) {
+    hotelDiff = -(diffPerDay * std.returnPct * days);
+    log(`  → 住宿超标: 每晚超 ¥${diffPerDay}，自付 ${(std.returnPct*100)}%`);
+  } else if (diffPerDay < 0) {
+    hotelDiff = (-diffPerDay) * std.allowancePct * days;
+    log(`  → 住宿节省: 每晚省 ¥${-diffPerDay}，补贴 ${(std.allowancePct*100)}%`);
+  } else {
+    log(`  → 住宿恰好达标`);
+  }
+
+  const total = transportCost + dailyTotal + hotelCost + hotelDiff;
+
+  resultArea.style.display = 'block';
+  document.getElementById('resultDetail').innerHTML = `
+    <div class="status-card">
+      <div class="detail">交通费: ¥${fmt(transportCost)}</div>
+      <div class="detail">日补贴: ¥${dailyAllow} × ${days}天 = ¥${fmt(dailyTotal)}</div>
+      <div class="detail">住宿费: ¥${hotel} × ${days}晚 = ¥${fmt(hotelCost)}</div>
+      <div class="detail">住宿差额: ¥${fmt(hotelDiff)} (标准¥${hotelStd}/晚)</div>
+      <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border);font-weight:700;color:var(--primary);font-size:1.1rem;">
+        报销总额: ¥${fmt(total)}
+      </div>
+    </div>`;
+  log(`  → compute() = ¥${fmt(total)}`, 'success');
+}
+
+updateForm();
+log('差旅报销系统就绪', 'success');
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单例模式 - 四种实现</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">单例模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">确保一个类只有一个实例，并提供全局访问点。</p>
+
+    <div class="control-group">
+      <label>选择实现方式</label>
+      <select id="implType">
+        <option value="lazy">懒汉式 (LazySingleton)</option>
+        <option value="eager">饿汉式 (HungrySingleton)</option>
+        <option value="dcl">双重检查锁 (DoubleCheckedLocking)</option>
+        <option value="iodh">IoDH 静态内部类</option>
+      </select>
+    </div>
+
+    <div class="btn-group" style="margin-top:1rem;">
+      <button class="btn btn-primary" onclick="getInstance()">getInstance()</button>
+      <button class="btn btn-warning" onclick="concurrentTest()">并发测试</button>
+      <button class="btn btn-outline" onclick="resetAll()">重置</button>
+    </div>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">实例验证</h3>
+      <div id="instanceResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;"></div>
+
+      <div style="margin-top:1.5rem;">
+        <h4 style="font-size:0.9rem;">唯一性验证</h4>
+        <div id="uniquenessCheck" class="status-card">
+          <div class="detail">获取实例次数: <strong id="callCount">0</strong></div>
+          <div class="detail">不同 hashCode 数量: <strong id="uniqueCount">0</strong></div>
+          <div class="detail" id="sameInstanceResult" style="font-weight:600;color:var(--text-muted);">尚未测试</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem;">
+        <h4 style="font-size:0.9rem;">实现对比</h4>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;font-size:0.82rem;border-collapse:collapse;">
+            <tr style="background:#f1f5f9;">
+              <th style="padding:0.5rem;text-align:left;border-bottom:1px solid var(--border);">实现</th>
+              <th style="padding:0.5rem;text-align:center;">懒加载</th>
+              <th style="padding:0.5rem;text-align:center;">线程安全</th>
+              <th style="padding:0.5rem;text-align:center;">性能</th>
+            </tr>
+            <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border);">懒汉式</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">高</td></tr>
+            <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border);">饿汉式</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="text-align:center;">高</td></tr>
+            <tr><td style="padding:0.5rem;border-bottom:1px solid var(--border);">双重检查锁</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">高</td></tr>
+            <tr><td style="padding:0.5rem;">IoDH</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">最高</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+let instances = [];
+let callCount = 0;
+
+const implNames = {
+  lazy: 'LazySingleton',
+  eager: 'HungrySingleton',
+  dcl: 'DoubleCheckedLockingSingleton',
+  iodh: 'IoDHSingleton'
+};
+
+// Simulate singletons (each type has a fixed hash)
+const singletonHashes = {
+  lazy: 'a3f2c1',
+  eager: 'b7d4e8',
+  dcl: 'c9a1f3',
+  iodh: 'd2e5b7'
+};
+
+function getInstance() {
+  const type = document.getElementById('implType').value;
+  const name = implNames[type];
+  const hash = singletonHashes[type];
+  callCount++;
+  instances.push({ type, hash, id: callCount });
+
+  log(`${name}.getInstance() → hashCode: @${hash}`, 'highlight');
+  renderInstances();
+  checkUniqueness();
+}
+
+function concurrentTest() {
+  clearLog();
+  const type = document.getElementById('implType').value;
+  const name = implNames[type];
+  const hash = singletonHashes[type];
+
+  log(`并发测试: 模拟 10 个线程同时调用 ${name}.getInstance()`, 'warning');
+  const count = 10;
+  for (let i = 0; i < count; i++) {
+    callCount++;
+    instances.push({ type, hash, id: callCount });
+    log(`  Thread-${i+1} → hashCode: @${hash}`);
+  }
+  renderInstances();
+  checkUniqueness();
+  log(`所有线程获取的 hashCode 相同 → 单例验证通过 ✓`, 'success');
+}
+
+function renderInstances() {
+  const container = document.getElementById('instanceResults');
+  const recent = instances.slice(-12);
+  container.innerHTML = recent.map(inst => `
+    <div style="padding:0.6rem 1rem;background:#f1f5f9;border-radius:8px;font-size:0.82rem;">
+      <div style="font-weight:600;">#${inst.id}</div>
+      <div style="color:var(--primary);font-family:monospace;">@${inst.hash}</div>
+      <div style="color:var(--text-muted);font-size:0.75rem;">${implNames[inst.type]}</div>
+    </div>
+  `).join('');
+}
+
+function checkUniqueness() {
+  const type = document.getElementById('implType').value;
+  const sameType = instances.filter(i => i.type === type);
+  const uniqueHashes = new Set(sameType.map(i => i.hash));
+  document.getElementById('callCount').textContent = sameType.length;
+  document.getElementById('uniqueCount').textContent = uniqueHashes.size;
+  const result = document.getElementById('sameInstanceResult');
+  if (uniqueHashes.size === 1 && sameType.length > 0) {
+    result.textContent = '✓ 所有实例 hashCode 相同 — 单例验证通过';
+    result.style.color = 'var(--success)';
+  } else if (uniqueHashes.size > 1) {
+    result.textContent = '✗ 存在不同实例 — 单例被破坏';
+    result.style.color = 'var(--danger)';
+  } else {
+    result.textContent = '尚未测试';
+    result.style.color = 'var(--text-muted)';
+  }
+}
+
+function resetAll() {
+  instances = [];
+  callCount = 0;
+  document.getElementById('instanceResults').innerHTML = '';
+  document.getElementById('callCount').textContent = '0';
+  document.getElementById('uniqueCount').textContent = '0';
+  document.getElementById('sameInstanceResult').textContent = '尚未测试';
+  document.getElementById('sameInstanceResult').style.color = 'var(--text-muted)';
+  clearLog();
+  log('已重置所有实例', 'success');
+}
+
+log('单例模式演示就绪', 'success');
+</script>
+</body>
+</html>

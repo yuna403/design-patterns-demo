@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>观察者模式 - 气象站</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">观察者模式</h2>
+    <p style="font-size:0.85rem;color:var(--text-muted);">WeatherData (Subject) 数据变化时，自动通知所有注册的 Observer。</p>
+    <div class="control-group">
+      <label>温度 (Temperature): <strong id="tempVal">25</strong>°C</label>
+      <input type="range" id="tempSlider" min="-20" max="50" value="25">
+    </div>
+    <div class="control-group">
+      <label>湿度 (Humidity): <strong id="humVal">60</strong>%</label>
+      <input type="range" id="humSlider" min="0" max="100" value="60">
+    </div>
+    <div class="control-group">
+      <label>气压 (Pressure): <strong id="presVal">1000</strong> hPa</label>
+      <input type="range" id="presSlider" min="950" max="1050" value="1000">
+    </div>
+    <button class="btn btn-outline" onclick="resetAll()" style="width:100%;margin-top:0.5rem;">重置</button>
+  </div>
+
+  <div class="viz-area">
+    <div class="viz-main">
+      <h3 style="margin-top:0;">观察者面板</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+        <div class="status-card" id="currentDisplay">
+          <h4>📍 CurrentConditionsDisplay</h4>
+          <div class="value" id="currentTemp">25.0°C</div>
+          <div class="detail" id="currentHum">湿度: 60%</div>
+        </div>
+        <div class="status-card" id="statsDisplay">
+          <h4>📊 StatisticsDisplay</h4>
+          <div class="detail">最高温: <span id="maxTemp">25.0</span>°C</div>
+          <div class="detail">最低温: <span id="minTemp">25.0</span>°C</div>
+          <div class="detail">平均温: <span id="avgTemp">25.0</span>°C</div>
+        </div>
+        <div class="status-card" id="forecastDisplay">
+          <h4>🔮 ForecastDisplay</h4>
+          <div class="detail" id="forecastText">气压稳定，天气将持续晴好。</div>
+        </div>
+      </div>
+      <div style="margin-top:1.5rem;">
+        <h4 style="font-size:0.9rem;">观察者注册状态</h4>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;" id="observerStatus">
+          <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;">
+            <input type="checkbox" checked onchange="toggleObserver('current')"> CurrentConditions
+          </label>
+          <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;">
+            <input type="checkbox" checked onchange="toggleObserver('stats')"> Statistics
+          </label>
+          <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;">
+            <input type="checkbox" checked onchange="toggleObserver('forecast')"> Forecast
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+let temp = 25, humidity = 60, pressure = 1000;
+let lastPressure = 1000;
+let tempHistory = [25];
+let observers = { current: true, stats: true, forecast: true };
+
+function update() {
+  if (observers.current) {
+    document.getElementById('currentTemp').textContent = fmt(temp, 1) + '°C';
+    document.getElementById('currentHum').textContent = '湿度: ' + humidity + '%';
+  } else {
+    document.getElementById('currentTemp').textContent = '--';
+    document.getElementById('currentHum').textContent = '未注册';
+  }
+
+  if (observers.stats) {
+    tempHistory.push(temp);
+    document.getElementById('maxTemp').textContent = fmt(Math.max(...tempHistory), 1);
+    document.getElementById('minTemp').textContent = fmt(Math.min(...tempHistory), 1);
+    const avg = tempHistory.reduce((a, b) => a + b, 0) / tempHistory.length;
+    document.getElementById('avgTemp').textContent = fmt(avg, 1);
+  }
+
+  if (observers.forecast) {
+    let msg;
+    if (pressure > lastPressure) msg = '气压上升，天气将转好。';
+    else if (pressure < lastPressure) msg = '气压下降，可能有降雨。';
+    else msg = '气压稳定，天气将持续当前状态。';
+    document.getElementById('forecastText').textContent = msg;
+    lastPressure = pressure;
+  }
+  log(`WeatherData.notifyObservers() → temp=${temp}, humidity=${humidity}, pressure=${pressure}`);
+}
+
+function toggleObserver(name) {
+  observers[name] = !observers[name];
+  const action = observers[name] ? '注册' : '注销';
+  log(`Observer "${name}" ${action}`, observers[name] ? 'success' : 'warning');
+  update();
+}
+
+function resetAll() {
+  document.getElementById('tempSlider').value = 25;
+  document.getElementById('humSlider').value = 60;
+  document.getElementById('presSlider').value = 1000;
+  document.getElementById('tempVal').textContent = '25';
+  document.getElementById('humVal').textContent = '60';
+  document.getElementById('presVal').textContent = '1000';
+  temp = 25; humidity = 60; pressure = 1000; lastPressure = 1000;
+  tempHistory = [25];
+  clearLog();
+  log('系统已重置', 'success');
+  update();
+}
+
+document.getElementById('tempSlider').addEventListener('input', e => {
+  temp = Number(e.target.value);
+  document.getElementById('tempVal').textContent = temp;
+  update();
+});
+document.getElementById('humSlider').addEventListener('input', e => {
+  humidity = Number(e.target.value);
+  document.getElementById('humVal').textContent = humidity;
+  update();
+});
+document.getElementById('presSlider').addEventListener('input', e => {
+  pressure = Number(e.target.value);
+  document.getElementById('presVal').textContent = pressure;
+  update();
+});
+
+log('WeatherStation 启动，注册 3 个观察者', 'success');
+update();
+</script>
+</body>
+</html>
