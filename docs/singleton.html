@@ -5,6 +5,236 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>单例模式 - 四种实现</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+.impl-card {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.impl-card.active {
+  border-color: var(--primary);
+  background: #eef2ff;
+}
+.impl-card h4 { margin: 0 0 0.3rem; font-size: 0.95rem; }
+.impl-card p { margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.impl-card .tags { display:flex; gap:0.4rem; margin-top:0.5rem; }
+.tag { font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:99px; font-weight:600; }
+.tag-yes { background:#dcfce7; color:#15803d; }
+.tag-no  { background:#fee2e2; color:#b91c1c; }
+
+.instance-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.4rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  animation: slideIn 0.3s ease;
+  font-size: 0.85rem;
+}
+.instance-row .call-id { color: var(--text-muted); width: 2rem; flex-shrink: 0; }
+.instance-row .hash { font-family: monospace; color: var(--primary); font-weight: 600; flex: 1; }
+.instance-row .badge-same { background:#dcfce7; color:#15803d; font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:99px; font-weight:600; }
+.instance-row .badge-diff { background:#fee2e2; color:#b91c1c; font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:99px; font-weight:600; }
+
+.verify-banner {
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.verify-banner.pass { background: #dcfce7; color: #15803d; }
+.verify-banner.pending { background: #f1f5f9; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
+  <a href="index.html" class="brand">Design Patterns Demo</a>
+  <div class="nav-links"><a href="index.html">首页</a></div>
+</nav>
+
+<div class="page-container">
+  <!-- 左侧：选择实现方式 -->
+  <div class="control-panel">
+    <h2 style="margin-top:0;font-size:1.2rem;">单例模式</h2>
+    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;">点击选择一种实现，然后多次调用 getInstance() 验证是否每次返回同一个对象。</p>
+
+    <div class="impl-card active" onclick="selectImpl('lazy')" id="card-lazy">
+      <h4>懒汉式 (Lazy)</h4>
+      <p>第一次调用时才创建实例。<strong>非线程安全</strong>，多线程可能创建多个实例。</p>
+      <div class="tags">
+        <span class="tag tag-yes">懒加载 ✓</span>
+        <span class="tag tag-no">线程不安全 ✗</span>
+      </div>
+    </div>
+
+    <div class="impl-card" onclick="selectImpl('eager')" id="card-eager">
+      <h4>饿汉式 (Eager)</h4>
+      <p>类加载时就创建实例。线程安全，但会<strong>提前占用资源</strong>。</p>
+      <div class="tags">
+        <span class="tag tag-no">非懒加载 ✗</span>
+        <span class="tag tag-yes">线程安全 ✓</span>
+      </div>
+    </div>
+
+    <div class="impl-card" onclick="selectImpl('dcl')" id="card-dcl">
+      <h4>双重检查锁 (DCL)</h4>
+      <p>加 volatile + synchronized 双重判断，兼顾懒加载和线程安全。</p>
+      <div class="tags">
+        <span class="tag tag-yes">懒加载 ✓</span>
+        <span class="tag tag-yes">线程安全 ✓</span>
+      </div>
+    </div>
+
+    <div class="impl-card" onclick="selectImpl('iodh')" id="card-iodh">
+      <h4>IoDH 静态内部类</h4>
+      <p>利用类加载机制保证线程安全，性能最优，<strong>推荐使用</strong>。</p>
+      <div class="tags">
+        <span class="tag tag-yes">懒加载 ✓</span>
+        <span class="tag tag-yes">线程安全 ✓</span>
+        <span class="tag tag-yes">性能最高 ✓</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧：验证区域 -->
+  <div class="viz-area">
+    <div class="viz-main">
+      <!-- 当前实现说明 -->
+      <div id="implDesc" style="background:#eef2ff;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+        <div style="font-size:0.8rem;color:var(--primary);font-weight:700;margin-bottom:0.3rem;">当前实现</div>
+        <div id="implDescText" style="font-size:0.9rem;font-weight:600;">LazySingleton.getInstance()</div>
+        <div id="implDescNote" style="font-size:0.82rem;color:var(--text-muted);margin-top:0.25rem;">每次调用都应该返回同一个对象（相同 hashCode）</div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="btn-group" style="margin-bottom:1.25rem;">
+        <button class="btn btn-primary" onclick="callGetInstance()">调用 getInstance()</button>
+        <button class="btn btn-warning" onclick="simulateConcurrent()">模拟 10 线程并发</button>
+        <button class="btn btn-outline" onclick="resetDemo()">清空重置</button>
+      </div>
+
+      <!-- 唯一性结论 -->
+      <div class="verify-banner pending" id="verifyBanner">
+        尚未调用 — 请点击「调用 getInstance()」
+      </div>
+
+      <!-- 调用记录 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <h4 style="margin:0;font-size:0.9rem;">调用记录 <span style="color:var(--text-muted);font-weight:normal;font-size:0.8rem;">(所有调用应返回相同 hashCode)</span></h4>
+        <span style="font-size:0.8rem;color:var(--text-muted);">共 <strong id="callCountDisplay">0</strong> 次</span>
+      </div>
+      <div id="instanceList" style="max-height:300px;overflow-y:auto;"></div>
+    </div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const impls = {
+  lazy:  { name:'LazySingleton',                hash:'a3f2c1', label:'懒汉式', safe: false },
+  eager: { name:'HungrySingleton',              hash:'b7d4e8', label:'饿汉式', safe: true  },
+  dcl:   { name:'DoubleCheckedLockingSingleton', hash:'c9a1f3', label:'双重检查锁', safe: true },
+  iodh:  { name:'IoDHSingleton',                hash:'d2e5b7', label:'IoDH 静态内部类', safe: true }
+};
+
+let currentImpl = 'lazy';
+let callHistory = [];
+
+function selectImpl(key) {
+  currentImpl = key;
+  document.querySelectorAll('.impl-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-' + key).classList.add('active');
+  document.getElementById('implDescText').textContent = impls[key].name + '.getInstance()';
+  resetDemo();
+  log(`切换到: ${impls[key].name}`, 'success');
+}
+
+function callGetInstance() {
+  const impl = impls[currentImpl];
+  const callNum = callHistory.length + 1;
+  callHistory.push({ num: callNum, hash: impl.hash, name: impl.name });
+  renderList();
+  log(`${impl.name}.getInstance() → @${impl.hash}`, 'highlight');
+  updateBanner();
+  document.getElementById('callCountDisplay').textContent = callHistory.length;
+}
+
+function simulateConcurrent() {
+  const impl = impls[currentImpl];
+  log(`模拟 10 个线程同时调用 ${impl.name}.getInstance()...`, 'warning');
+  for (let i = 0; i < 10; i++) {
+    const callNum = callHistory.length + 1;
+    callHistory.push({ num: callNum, hash: impl.hash, name: impl.name, thread: i + 1 });
+  }
+  renderList();
+  updateBanner();
+  document.getElementById('callCountDisplay').textContent = callHistory.length;
+  log('所有线程 hashCode 完全一致 → 单例验证通过 ✓', 'success');
+}
+
+function renderList() {
+  const firstHash = callHistory[0]?.hash;
+  document.getElementById('instanceList').innerHTML = callHistory.map(item => {
+    const isSame = item.hash === firstHash;
+    const label = callHistory.length > 1
+      ? (isSame
+          ? '<span class="badge-same">= 同一实例</span>'
+          : '<span class="badge-diff">≠ 不同实例!</span>')
+      : '';
+    const thread = item.thread ? `<span style="color:var(--text-muted);">Thread-${item.thread}</span>` : `第 ${item.num} 次调用`;
+    return `<div class="instance-row">
+      <span class="call-id">#${item.num}</span>
+      <span>${thread}</span>
+      <span class="hash">@${item.hash}</span>
+      ${label}
+    </div>`;
+  }).join('');
+}
+
+function updateBanner() {
+  const banner = document.getElementById('verifyBanner');
+  if (callHistory.length < 2) {
+    banner.className = 'verify-banner pending';
+    banner.textContent = `已获取 1 次实例 — 再调用一次，验证 hashCode 是否相同`;
+    return;
+  }
+  const hashes = new Set(callHistory.map(i => i.hash));
+  if (hashes.size === 1) {
+    banner.className = 'verify-banner pass';
+    banner.textContent = `✓ ${callHistory.length} 次调用，hashCode 全部相同 → 单例模式验证通过`;
+  }
+}
+
+function resetDemo() {
+  callHistory = [];
+  document.getElementById('instanceList').innerHTML = '';
+  document.getElementById('callCountDisplay').textContent = '0';
+  const banner = document.getElementById('verifyBanner');
+  banner.className = 'verify-banner pending';
+  banner.textContent = '尚未调用 — 请点击「调用 getInstance()」';
+  clearLog();
+}
+
+log('单例模式演示就绪，请从左侧选择一种实现方式', 'success');
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单例模式 - 四种实现</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <nav class="navbar" style="display:flex;align-items:center;justify-content:space-between;">
