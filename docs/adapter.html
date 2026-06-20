@@ -24,8 +24,11 @@
         <option value="colors">["Red","Green","Blue"]</option>
       </select>
     </div>
-    <button class="btn btn-primary" onclick="stepNext()" style="width:100%;margin-top:0.5rem;">next() 下一步</button>
-    <button class="btn btn-outline" onclick="resetAdapter()" style="width:100%;margin-top:0.5rem;">重置迭代器</button>
+    <div class="btn-group" style="margin-top:0.5rem;">
+      <button class="btn btn-primary" onclick="stepNext()">▶ next()</button>
+      <button class="btn btn-outline" onclick="resetAdapter()">↻ 重置</button>
+    </div>
+    <button class="btn btn-success" onclick="autoAll()" style="width:100%;margin-top:0.5rem;">⏩ 自动遍历全部</button>
   </div>
 
   <div class="viz-area">
@@ -102,6 +105,13 @@ function stepNext() {
 
   if (index >= currentData.length) {
     log(`下次调用 hasNext() 将返回 false`, 'warning');
+  }
+}
+
+async function autoAll() {
+  while (index < currentData.length) {
+    stepNext();
+    await new Promise(r => setTimeout(r, 500));
   }
 }
 

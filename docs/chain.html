@@ -112,12 +112,22 @@ async function submitExpense() {
   const postOrder = ['step-staff', 'step-leader', 'step-pm'];
   const targetIdx = postOrder.indexOf(postMap[post]);
 
+  const stepLabels = { 'step-staff':'普通员工', 'step-leader':'主管', 'step-pm':'高层' };
   for (let i = 0; i <= targetIdx; i++) {
-    document.getElementById(chain[i]).classList.add('processing');
-    log(`  → 传递到 ${chain[i].replace('step-','')}...`, 'highlight');
-    await new Promise(r => setTimeout(r, 600));
-    document.getElementById(chain[i]).classList.remove('processing');
-    document.getElementById(chain[i]).classList.add(i === targetIdx ? 'approved' : '');
+    const stepEl = document.getElementById(chain[i]);
+    stepEl.classList.add('processing');
+    if (i < targetIdx) {
+      log(`  → ${stepLabels[chain[i]]} 标准不匹配，向上传递...`, 'warning');
+    } else {
+      log(`  → ${stepLabels[chain[i]]} 标准匹配，由此处理`, 'highlight');
+    }
+    await new Promise(r => setTimeout(r, 700));
+    stepEl.classList.remove('processing');
+    if (i < targetIdx) {
+      stepEl.classList.add('rejected');
+    } else {
+      stepEl.classList.add('approved');
+    }
   }
 
   log(`  → ${post} 审批通过，开始计算费用`, 'success');
