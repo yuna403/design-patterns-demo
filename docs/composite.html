@@ -81,13 +81,13 @@ function addElement() {
   if (italic) { desc = 'ItalicDecorator(' + desc + ')'; decorators.push('italic'); }
 
   doc.push({ text, type, decorators, desc });
-  log(`document.add(${desc}, "${text}")`, 'highlight');
+  log('文档添加元素: document.add(' + desc + ', "' + text + '")', 'highlight');
   render();
 }
 
 function removeElement(idx) {
   const removed = doc.splice(idx, 1)[0];
-  log(`document.remove(${removed.desc})`, 'warning');
+  log('文档移除元素: document.remove(' + removed.desc + ')', 'warning');
   render();
 }
 
@@ -123,7 +123,7 @@ function clearDoc() {
   render();
 }
 
-log('DocumentEditor 就绪 — 组合模式 + 装饰器模式', 'success');
+log('文档编辑器 (DocumentEditor) 就绪 — 组合模式 (Composite) + 装饰器模式 (Decorator)', 'success');
 render();
 </script>
 </body>

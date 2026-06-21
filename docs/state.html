@@ -217,7 +217,7 @@ function llog(msg, t) {
 function tryLift(act, label) {
   var ns = vt[ls] && vt[ls][act];
   if (!ns) { llog('x 当前 ' + si[ls][0] + ' 不允许「' + label + '」', 'warning'); return; }
-  llog('→ ' + si[ls][0] + ' 转换至 ' + si[ns][0], 'highlight');
+  llog('状态转换: ' + si[ls][0] + ' → ' + si[ns][0], 'highlight');
   setLS(ns);
 }
 function liftOpen()  { tryLift('open',  '开门'); }
@@ -247,7 +247,7 @@ function setPhase(ph) {
   tTotal = ph.dur;
   document.getElementById('tlProgress').style.width = '100%';
   var p = document.getElementById('logTraffic');
-  p.innerHTML += '<div style="color:#93c5fd">[' + new Date().toLocaleTimeString() + '] setState(' + ph.name + ') → ' + ph.desc + '</div>';
+  p.innerHTML += '<div style="color:#93c5fd">[' + new Date().toLocaleTimeString() + '] Context.setState(' + ph.name + ') → ' + ph.desc + '</div>';
   p.scrollTop = p.scrollHeight;
 }
 

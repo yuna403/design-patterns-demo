@@ -58,20 +58,20 @@ function toggleDevice(name) {
   const action = wasOn ? 'TurnOff' : 'TurnOn';
   commandStack.push({ device: name, action, reverse: wasOn });
   updateDeviceUI(name);
-  log(`remoteControl.pressButton() → ${action}Command(${deviceNames[name]}).execute()`, 'highlight');
+  log('遥控器 RemoteControl.pressButton() → ' + action + 'Command(' + deviceNames[name] + ').execute()', 'highlight');
   renderStack();
 }
 
 function undoLast() {
   if (commandStack.length === 0) {
-    log('undo(): 命令栈为空，无操作', 'warning');
+    log('撤销 undo(): 命令栈为空，无操作可撤销', 'warning');
     return;
   }
   const cmd = commandStack.pop();
   devices[cmd.device] = cmd.reverse;
   updateDeviceUI(cmd.device);
   const undoAction = cmd.reverse ? 'TurnOn' : 'TurnOff';
-  log(`remoteControl.undoButton() → ${cmd.action}Command(${deviceNames[cmd.device]}).undo() → ${undoAction}`, 'warning');
+  log('遥控器 RemoteControl.undoButton() → ' + cmd.action + 'Command(' + deviceNames[cmd.device] + ').undo() → ' + undoAction, 'warning');
   renderStack();
 }
 
@@ -100,7 +100,7 @@ function resetAll() {
   log('所有设备已关闭', 'success');
 }
 
-log('RemoteControl 遥控器就绪', 'success');
+log('家电遥控器 (RemoteControl) 演示就绪', 'success');
 </script>
 </body>
 </html>

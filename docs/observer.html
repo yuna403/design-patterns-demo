@@ -102,13 +102,13 @@ function update() {
     document.getElementById('forecastText').textContent = msg;
     lastPressure = pressure;
   }
-  log(`WeatherData.notifyObservers() → temp=${temp}, humidity=${humidity}, pressure=${pressure}`);
+  log('WeatherData 更新 → notifyObservers() 通知所有 Observer: temp=' + temp + ', humidity=' + humidity + ', pressure=' + pressure);
 }
 
 function toggleObserver(name) {
   observers[name] = !observers[name];
   const action = observers[name] ? '注册' : '注销';
-  log(`Observer "${name}" ${action}`, observers[name] ? 'success' : 'warning');
+  log('Observer "' + name + '" 已' + action, observers[name] ? 'success' : 'warning');
   update();
 }
 
@@ -142,7 +142,7 @@ document.getElementById('presSlider').addEventListener('input', e => {
   update();
 });
 
-log('WeatherStation 启动，注册 3 个观察者', 'success');
+log('气象站 (WeatherStation) 启动，已注册 3 个 Observer', 'success');
 update();
 </script>
 </body>

@@ -58,7 +58,7 @@ function resetStates() {
 async function watchMovie() {
   clearLog();
   resetStates();
-  log('facade.watchMovie("Inception")', 'highlight');
+  log('家庭影院 facade.watchMovie("Inception") 一键启动', 'highlight');
 
   log('  → popcornPopper.on()');
   await animate('popcorn', '运行中');
@@ -88,13 +88,13 @@ async function watchMovie() {
   log('  → streamingPlayer.play("Inception")');
   await animate('player', '播放: Inception');
 
-  log('电影开始播放 ✓', 'success');
+  log('电影播放开始 ✓', 'success');
 }
 
 async function listenToMusic() {
   clearLog();
   resetStates();
-  log('facade.listenToMusic("Jazz Playlist")', 'highlight');
+  log('家庭影院 facade.listenToMusic("Jazz Playlist") 一键启动', 'highlight');
 
   log('  → theaterLights.dim(50)');
   await animate('lights', '调暗 (50%)');
@@ -115,7 +115,7 @@ async function listenToMusic() {
 async function endAll() {
   clearLog();
   resetStates();
-  log('facade.end()', 'highlight');
+  log('家庭影院 facade.end() 一键关闭', 'highlight');
 
   log('  → popcornPopper.off()');
   await animate('popcorn', '关闭');
@@ -133,7 +133,7 @@ async function endAll() {
   log('所有设备已关闭 ✓', 'success');
 }
 
-log('HomeTheaterFacade 就绪', 'success');
+log('家庭影院外观 (HomeTheaterFacade) 演示就绪', 'success');
 </script>
 </body>
 </html>

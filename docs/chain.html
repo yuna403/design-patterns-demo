@@ -104,8 +104,8 @@ async function submitExpense() {
   const resultArea = document.getElementById('resultArea');
   resultArea.style.display = 'none';
 
-  log(`TravelExpense.getInstance("${post}")`, 'highlight');
-  log(`  → 创建 ${post}TravelExpense 实例`);
+  log('TravelExpense.getInstance("' + post + '")', 'highlight');
+  log('  → 创建 ' + post + 'TravelExpense 处理器实例');
 
   const chain = ['step-staff', 'step-leader', 'step-pm'];
   const postMap = { '普通员工':'step-staff', '主管':'step-leader', '高层':'step-pm' };
@@ -166,7 +166,7 @@ async function submitExpense() {
 }
 
 updateForm();
-log('差旅报销系统就绪', 'success');
+log('差旅报销 (TravelExpense) 责任链系统就绪', 'success');
 </script>
 </body>
 </html>

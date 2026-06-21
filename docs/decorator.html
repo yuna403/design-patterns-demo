@@ -94,7 +94,7 @@ function updateOrder() {
   chainHtml += `<div style="padding:0.5rem 1rem;background:#fef3c7;border-radius:8px;font-weight:700;font-size:0.85rem;">$${fmt(total)}<br><small style="font-weight:normal;color:var(--text-muted);">cost()</small></div>`;
   document.getElementById('chain').innerHTML = chainHtml;
 
-  log(`beverage.getDescription() = "${desc}", cost() = $${fmt(total)}`, 'highlight');
+  log('Beverage.getDescription() = "' + desc + '", cost() = $' + fmt(total), 'highlight');
 }
 
 function resetOrder() {
@@ -105,7 +105,7 @@ function resetOrder() {
   updateOrder();
 }
 
-log('StarbucksTest 启动', 'success');
+log('星巴克咖啡 (StarbucksTest) 演示启动', 'success');
 updateOrder();
 </script>
 </body>

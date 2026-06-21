@@ -83,7 +83,7 @@ function highlightNode(id) {
 
 function stepIterate() {
   if (iterIndex >= flatMenu.length) {
-    log('CompositeIterator: 所有菜单项已遍历完毕', 'warning');
+    log('CompositeIterator: 所有菜单项遍历完毕', 'warning');
     return;
   }
   const id = flatMenu[iterIndex];
@@ -93,8 +93,8 @@ function stepIterate() {
     <strong>[${iterIndex+1}]</strong> ${menuNames[id]}
   </div>`;
   output.scrollTop = output.scrollHeight;
-  log(`iterator.next() → MenuItem("${menuNames[id]}")`, 'highlight');
-  log(`  hasNext() = ${iterIndex + 1 < flatMenu.length}`);
+  log('Iterator.next() → MenuItem("' + menuNames[id] + '")', 'highlight');
+  log('  hasNext() = ' + (iterIndex + 1 < flatMenu.length));
   iterIndex++;
 }
 
@@ -115,11 +115,11 @@ function resetIterator() {
   document.querySelectorAll('.node-label.highlighted').forEach(n => n.classList.remove('highlighted'));
   document.getElementById('iterOutput').innerHTML = '';
   clearLog();
-  log('new CompositeIterator(allMenus.iterator()) — 迭代器已重置', 'success');
+  log('迭代器已重置: new CompositeIterator(allMenus.iterator())', 'success');
 }
 
-log('Waitress 准备遍历所有菜单', 'success');
-log('new CompositeIterator(allMenus.createIterator())', 'highlight');
+log('服务员 (Waitress) 准备遍历所有菜单', 'success');
+log('创建组合迭代器: new CompositeIterator(allMenus.createIterator())', 'highlight');
 </script>
 </body>
 </html>

@@ -25,7 +25,7 @@
       </select>
     </div>
     <div class="btn-group" style="margin-top:0.5rem;">
-      <button class="btn btn-primary" onclick="stepNext()">▶ next()</button>
+      <button class="btn btn-primary" onclick="stepNext()">▶ 下一步 next()</button>
       <button class="btn btn-outline" onclick="resetAdapter()">↻ 重置</button>
     </div>
     <button class="btn btn-success" onclick="autoAll()" style="width:100%;margin-top:0.5rem;">⏩ 自动遍历全部</button>
@@ -77,8 +77,8 @@ function resetAdapter() {
   document.getElementById('hasNextVal').textContent = 'true';
   document.getElementById('iterResult').innerHTML = '';
   clearLog();
-  log(`new EnumerationIterator(new Vector(${JSON.stringify(currentData)}).elements())`, 'success');
-  log(`适配器创建完成，数据: [${currentData.join(', ')}]`);
+  log('创建适配器: new EnumerationIterator(new Vector(' + JSON.stringify(currentData) + ').elements())', 'success');
+  log('适配器就绪，数据源: [' + currentData.join(', ') + ']');
 }
 
 function stepNext() {
@@ -90,8 +90,8 @@ function stepNext() {
   visited.push(item);
   index++;
 
-  log(`adapter.hasNext() → enumeration.hasMoreElements() = true`, 'highlight');
-  log(`adapter.next() → enumeration.nextElement() = ${JSON.stringify(item)}`);
+  log('Iterator.hasNext() → 委托给 Enumeration.hasMoreElements() = true', 'highlight');
+  log('Iterator.next() → 委托给 Enumeration.nextElement() = ' + JSON.stringify(item));
 
   document.getElementById('currentIndex').textContent = index;
   document.getElementById('hasNextVal').textContent = index < currentData.length ? 'true' : 'false';
@@ -104,7 +104,7 @@ function stepNext() {
   `).join('');
 
   if (index >= currentData.length) {
-    log(`下次调用 hasNext() 将返回 false`, 'warning');
+    log('hasNext() = false → 迭代完成', 'warning');
   }
 }
 

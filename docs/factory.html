@@ -53,7 +53,7 @@
             <option value="clam">Clam</option>
             <option value="veggie">Veggie</option>
           </select>
-          <button class="btn btn-success" onclick="factoryMethod()">orderPizza()</button>
+          <button class="btn btn-success" onclick="factoryMethod()">下单 orderPizza()</button>
         </div>
         <div id="fmResult" class="status-card" style="display:none;"></div>
       </div>
@@ -94,12 +94,12 @@ function simpleFactory(type) {
   clearLog();
   const result = document.getElementById('simpleResult');
   result.style.display = 'block';
-  log(`SimplePizzaFactory.createPizza("${type}")`, 'highlight');
-  log(`  → new ${type.charAt(0).toUpperCase()+type.slice(1)}Pizza()`);
-  log(`  → pizza.prepare()`);
-  log(`  → pizza.bake()`);
-  log(`  → pizza.cut()`);
-  log(`  → pizza.box()`, 'success');
+  log('简单工厂: SimplePizzaFactory.createPizza("' + type + '")', 'highlight');
+  log('  → new ' + type.charAt(0).toUpperCase() + type.slice(1) + 'Pizza()');
+  log('  → pizza.prepare() 准备原料');
+  log('  → pizza.bake() 烘烤');
+  log('  → pizza.cut() 切片');
+  log('  → pizza.box() 装盒', 'success');
   result.innerHTML = `<h4>${type.charAt(0).toUpperCase()+type.slice(1)} Pizza</h4>
     <div class="detail">SimplePizzaFactory 创建 → prepare → bake → cut → box</div>
     <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--success);">✓ 订单完成</div>`;
@@ -111,13 +111,13 @@ function factoryMethod() {
   const type = document.getElementById('fmType').value;
   const result = document.getElementById('fmResult');
   result.style.display = 'block';
-  log(`${store}PizzaStore.orderPizza("${type}")`, 'highlight');
-  log(`  → 调用子类覆写的 createPizza("${type}")`);
-  log(`  → ${store}PizzaStore.createPizza() 返回 ${store}Style${type.charAt(0).toUpperCase()+type.slice(1)}Pizza`);
-  log(`  → pizza.prepare()`);
-  log(`  → pizza.bake()`);
-  log(`  → pizza.cut()`);
-  log(`  → pizza.box()`, 'success');
+  log('工厂方法: ' + store + 'PizzaStore.orderPizza("' + type + '")', 'highlight');
+  log('  → 调用子类覆写的 createPizza("' + type + '")');
+  log('  → ' + store + 'PizzaStore.createPizza() 返回 ' + store + 'Style' + type.charAt(0).toUpperCase() + type.slice(1) + 'Pizza');
+  log('  → pizza.prepare() 准备原料');
+  log('  → pizza.bake() 烘烤');
+  log('  → pizza.cut() 切片');
+  log('  → pizza.box() 装盒', 'success');
   result.innerHTML = `<h4>${store} Style ${type.charAt(0).toUpperCase()+type.slice(1)} Pizza</h4>
     <div class="detail">工厂方法：${store}PizzaStore 子类决定创建哪种 Pizza</div>
     <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--success);">✓ 订单完成</div>`;
@@ -130,21 +130,21 @@ function abstractFactory() {
   const result = document.getElementById('afResult');
   const ing = ingredients[store];
   result.style.display = 'block';
-  log(`${store}PizzaIngredientFactory 创建原料:`, 'highlight');
-  log(`  → dough: new ${ing.dough}()`);
-  log(`  → sauce: new ${ing.sauce}()`);
-  log(`  → cheese: new ${ing.cheese}()`);
-  if (type === 'clam') log(`  → clam: new ${ing.clam}()`);
-  if (type === 'pepperoni') log(`  → pepperoni: new ${ing.pepperoni}()`);
-  if (type === 'veggie') log(`  → veggie: new ${ing.veggie}()`);
-  log(`  → ${type.charAt(0).toUpperCase()+type.slice(1)}Pizza.prepare() 使用原料`);
-  log(`  → bake → cut → box`, 'success');
+  log('抽象工厂: ' + store + 'PizzaIngredientFactory 创建原料', 'highlight');
+  log('  → 面团 dough: new ' + ing.dough + '()');
+  log('  → 酱料 sauce: new ' + ing.sauce + '()');
+  log('  → 芝士 cheese: new ' + ing.cheese + '()');
+  if (type === 'clam') log('  → 蛤蜊 clam: new ' + ing.clam + '()');
+  if (type === 'pepperoni') log('  → 腊肠 pepperoni: new ' + ing.pepperoni + '()');
+  if (type === 'veggie') log('  → 蔬菜 veggie: new ' + ing.veggie + '()');
+  log('  → ' + type.charAt(0).toUpperCase() + type.slice(1) + 'Pizza.prepare() 使用上述原料');
+  log('  → 烘烤 bake → 切片 cut → 装盒 box', 'success');
   result.innerHTML = `<h4>${type.charAt(0).toUpperCase()+type.slice(1)} Pizza (${store})</h4>
     <div class="detail"><strong>原料:</strong> ${ing.dough}, ${ing.sauce}, ${ing.cheese}${type==='clam'?', '+ing.clam:''}${type==='pepperoni'?', '+ing.pepperoni:''}${type==='veggie'?', '+ing.veggie:''}</div>
     <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--success);">✓ 订单完成</div>`;
 }
 
-log('PizzaStore 系统就绪', 'success');
+log('PizzaStore 披萨店系统就绪', 'success');
 </script>
 </body>
 </html>
