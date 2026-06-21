@@ -96,9 +96,15 @@ function update() {
 
   if (observers.forecast) {
     let msg;
-    if (pressure > lastPressure) msg = '气压上升，天气将转好。';
-    else if (pressure < lastPressure) msg = '气压下降，可能有降雨。';
-    else msg = '气压稳定，天气将持续当前状态。';
+    const diff = pressure - lastPressure;
+    const threshold = 3;
+    if (Math.abs(diff) <= threshold) {
+      msg = '气压稳定，天气将持续当前状态。';
+    } else if (diff > 0) {
+      msg = '气压上升，天气将转好。';
+    } else {
+      msg = '气压下降，可能有降雨。';
+    }
     document.getElementById('forecastText').textContent = msg;
     lastPressure = pressure;
   }
